@@ -3,35 +3,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/backyard_private/app/bootstrap.php';
 $viewer = requireUser();
 $pdo = db();
-$people = ['tim' => ['name' => 'Tim', 'color' => '#fc4c02'], 'jonas' => ['name' => 'Jonas', 'color' => '#2dd4bf'], 'noah' => ['name' => 'Noah', 'color' => '#a5a0ff']];
-$rows = $pdo->query("SELECT u.username,w.iso_year,w.iso_week,w.completed_loops,w.run_count,w.finalized FROM challenge_weekly w JOIN users u ON u.id=w.user_id WHERE u.username IN ('tim','jonas','noah') ORDER BY w.iso_year DESC,w.iso_week DESC")->fetchAll(PDO::FETCH_ASSOC);
-$weeks = [];
-foreach ($rows as $r) {
-    $key = sprintf('%04d-W%02d', (int)$r['iso_year'], (int)$r['iso_week']);
-    $weeks[$key][$r['username']] = ['loops' => (int)$r['completed_loops'], 'runs' => (int)$r['run_count'], 'final' => (bool)$r['finalized']];
-}
-$board = [];
-foreach ($people as $id => $p) $board[$id] = ['name' => $p['name'], 'color' => $p['color'], 'loops' => 0, 'bonus' => 0, 'wins' => 0, 'points' => 0];
-$history = [];
-foreach ($weeks as $weekKey => $members) {
-    $complete = count($members) === 3 && !in_array(false, array_map(static fn($v) => $v['final'], $members), true);
-    $maxLoops = 0;
-    foreach ($people as $id => $_) $maxLoops = max($maxLoops, $members[$id]['loops'] ?? 0);
-    $winners = [];
-    // No bonus for a week with zero completed loops. Equal leaders split the win by EACH receiving +5.
-    if ($complete && $maxLoops > 0) foreach ($people as $id => $_) if (($members[$id]['loops'] ?? 0) === $maxLoops) $winners[] = $id;
-    foreach ($people as $id => $_) {
-        $loops = $members[$id]['loops'] ?? 0;
-        $bonus = in_array($id, $winners, true) ? 5 : 0;
-        $board[$id]['loops'] += $loops;
-        $board[$id]['bonus'] += $bonus;
-        $board[$id]['wins'] += $bonus ? 1 : 0;
-        $board[$id]['points'] += $loops + $bonus;
-    }
-    $history[] = ['week' => $weekKey, 'members' => $members, 'complete' => $complete, 'winners' => $winners];
-}
-$ranking = array_values($board);
-usort($ranking, static fn($a, $b) => ($b['points'] <=> $a['points']) ?: ($b['loops'] <=> $a['loops']) ?: strcmp($a['name'], $b['name']));
+require_once dirname(__DIR__, 2) . '/backyard_private/app/challenge_score.php';
+$score = challengeScore($pdo->query("SELECT u.username,w.* FROM challenge_weekly w JOIN users u ON u.id=w.user_id WHERE u.username IN ('tim','jonas','noah') ORDER BY w.iso_year DESC,w.iso_week DESC")->fetchAll());
+extract($score, EXTR_SKIP);
 $grand = array_sum(array_column($board, 'points'));
 $allLoops = array_sum(array_column($board, 'loops'));
 $finished = count(array_filter($history, static fn($h) => $h['complete']));

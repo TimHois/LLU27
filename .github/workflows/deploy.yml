@@ -25,6 +25,15 @@ jobs:
       - name: Repository auschecken
         uses: actions/checkout@v4
 
+      - name: Private PHP-Abhängigkeiten installieren
+        working-directory: backyard_private
+        run: |
+          composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          composer check-platform-reqs
+
+      - name: Supporter-Regeln prüfen
+        run: php backyard_private/tests/supporter_test.php
+
       - name: PHP-Syntax prüfen
         run: |
           set -euo pipefail
@@ -45,6 +54,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/llu27-web"
           mkdir -p "$RUNNER_TEMP/llu27-private/app"
           mkdir -p "$RUNNER_TEMP/llu27-private/bin"
+          mkdir -p "$RUNNER_TEMP/llu27-private/vendor"
+
+          rsync -a backyard_private/vendor/ "$RUNNER_TEMP/llu27-private/vendor/"
 
           rsync -a \
             --exclude='.env' \
@@ -147,5 +159,10 @@ jobs:
             -e "$SSH_COMMAND" \
             "$RUNNER_TEMP/llu27-private/bin/" \
             "$SSH_USER@$SSH_HOST:$BASE/backyard_private/bin/"
+
+          rsync "${RSYNC_OPTIONS[@]}" \
+            -e "$SSH_COMMAND" \
+            "$RUNNER_TEMP/llu27-private/vendor/" \
+            "$SSH_USER@$SSH_HOST:$BASE/backyard_private/vendor/"
 
           echo "Deployment-Schritt abgeschlossen."

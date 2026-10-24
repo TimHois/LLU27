@@ -1,0 +1,49 @@
+name: Supporter checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-only-password
+          MYSQL_DATABASE: llu27_test
+          MYSQL_ROOT_HOST: '%'
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -ptest-only-password"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP-Syntax und JavaScript prüfen
+        run: |
+          set -euo pipefail
+          find backyard backyard_private -name '*.php' -not -path '*/vendor/*' -print0 | xargs -0 -n 1 php -l
+          node --check backyard/sw.js
+          node --check backyard/assets/supporter-push.js
+          node --check backyard/supporter/supporter.js
+      - name: Composer prüfen und installieren
+        working-directory: backyard_private
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer check-platform-reqs
+      - name: Regeln prüfen
+        run: php backyard_private/tests/supporter_test.php
+      - name: Testdatenbank und HTTP-Integration
+        env:
+          MYSQL_PWD: test-only-password
+        run: |
+          set -euo pipefail
+          mysql -h127.0.0.1 -uroot llu27_test < backyard_private/sql/schema.sql
+          mysql -h127.0.0.1 -uroot llu27_test < backyard_private/sql/remember_tokens.sql
+          mysql -h127.0.0.1 -uroot llu27_test < backyard_private/sql/20261024_supporter.sql
+          mysql -h127.0.0.1 -uroot llu27_test < backyard_private/sql/20261024_supporter.sql
+          php backyard_private/tests/supporter_integration.php

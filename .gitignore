@@ -8,6 +8,8 @@
 
 # Laufzeitdateien
 *.lock
+!backyard_private/composer.lock
+backyard_private/vendor/
 *.log
 error_log
 sessions/

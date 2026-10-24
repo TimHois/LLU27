@@ -2,21 +2,21 @@
   "name": "LLU 27 – Backyard Running",
   "short_name": "LLU 27",
   "description": "Backyard Ultra Trainingsdashboard",
-  "id": "/",
-  "start_url": "/dashboard.php",
-  "scope": "/",
+  "id": "./",
+  "start_url": "./dashboard.php",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0d1420",
   "theme_color": "#101923",
   "icons": [
     {
-      "src": "/assets/icon-192.png",
+      "src": "./assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/icon-512.png",
+      "src": "./assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

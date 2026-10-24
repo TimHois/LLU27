@@ -1,0 +1,9 @@
+{
+  "require": {
+    "php": ">=8.2",
+    "ext-curl": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
+    "minishlink/web-push": "^9.0"
+  }
+}

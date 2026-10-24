@@ -28,4 +28,4 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 <label>Benutzername<input name="username" autocomplete="username" required></label>
 <label>Passwort<input name="password" type="password" autocomplete="current-password" required></label>
 <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:#bdcbd8"><input type="checkbox" name="remember" value="1" style="width:18px;height:18px"> 30 Tage eingeloggt bleiben</label>
-<button class="btn">Einloggen →</button></form></section><p class="note">LLU 27 · BACKYARD ULTRA PROJECT</p></main></body></html>
+<button class="btn">Einloggen →</button></form></section><p class="note">LLU 27 · BACKYARD ULTRA PROJECT</p></main><p style="text-align:center"><a href="supporter/login.php">Supporter Zone · Anmelden</a> · <a href="supporter/register.php">Kostenlos registrieren</a></p></body></html>
